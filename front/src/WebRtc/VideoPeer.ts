@@ -2,6 +2,7 @@ import * as SimplePeerNamespace from "simple-peer";
 import {mediaManager} from "./MediaManager";
 import {TURN_PASSWORD, TURN_SERVER, TURN_USER} from "../Enum/EnvironmentVariable";
 import {RoomConnection} from "../Connexion/RoomConnection";
+import {blackListManager} from "./BlackListManager";
 
 const Peer: SimplePeerNamespace.SimplePeer = require('simple-peer');
 
@@ -81,8 +82,6 @@ export class VideoPeer extends Peer {
 
         this.on('data',  (chunk: Buffer) => {
             const message = JSON.parse(chunk.toString('utf8'));
-            console.log("data", message);
-
             if(message.type === MESSAGE_TYPE_CONSTRAINT) {
                 if (message.audio) {
                     mediaManager.enabledMicrophoneByUserId(this.userId);
@@ -95,8 +94,10 @@ export class VideoPeer extends Peer {
                 } else {
                     mediaManager.disabledVideoByUserId(this.userId);
                 }
-            } else if(message.type === 'message') {
-                mediaManager.addNewMessage(message.name, message.message);
+            } else if(message.type === MESSAGE_TYPE_MESSAGE) {
+                if (!blackListManager.isBlackListed(message.userId)) {
+                    mediaManager.addNewMessage(message.name, message.message);
+                }
             }
         });
 

@@ -36,6 +36,7 @@ export class SimplePeer {
     private readonly sendLocalScreenSharingStreamCallback: StartScreenSharingCallback;
     private readonly stopLocalScreenSharingStreamCallback: StopScreenSharingCallback;
     private readonly peerConnectionListeners: Array<PeerConnectionListener> = new Array<PeerConnectionListener>();
+    private readonly userId: Number;
 
     constructor(private Connection: RoomConnection, private enableReporting: boolean, private myName: string) {
         // We need to go through this weird bound function pointer in order to be able to "free" this reference later.
@@ -46,6 +47,7 @@ export class SimplePeer {
         mediaManager.onUpdateLocalStream(this.sendLocalVideoStreamCallback);
         mediaManager.onStartScreenSharing(this.sendLocalScreenSharingStreamCallback);
         mediaManager.onStopScreenSharing(this.stopLocalScreenSharingStreamCallback);
+        this.userId = Connection.getUserId();
         this.initialise();
     }
 
@@ -144,7 +146,7 @@ export class SimplePeer {
 
         //permit to send message
         mediaManager.addSendMessageCallback(user.userId,(message: string) => {
-            peer.write(new Buffer(JSON.stringify({type: MESSAGE_TYPE_MESSAGE, name: this.myName.toUpperCase(), message: message})));
+            peer.write(new Buffer(JSON.stringify({type: MESSAGE_TYPE_MESSAGE, name: this.myName.toUpperCase(), userId: this.userId, message: message})));
         });
 
         peer.toClose = false;

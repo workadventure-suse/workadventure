@@ -26,7 +26,7 @@ import {AddPlayerInterface} from "./AddPlayerInterface";
 import {PlayerAnimationNames} from "../Player/Animation";
 import {PlayerMovement} from "./PlayerMovement";
 import {PlayersPositionInterpolator} from "./PlayersPositionInterpolator";
-import {RemotePlayer} from "../Entity/RemotePlayer";
+import {RemotePlayer, selectedEvent} from "../Entity/RemotePlayer";
 import {Queue} from 'queue-typescript';
 import {SimplePeer, UserSimplePeerInterface} from "../../WebRtc/SimplePeer";
 import {ReconnectingSceneName} from "../Reconnecting/ReconnectingScene";
@@ -67,6 +67,7 @@ import {OpenChatIcon, openChatIconName} from "../Components/OpenChatIcon";
 import {SelectCharacterScene, SelectCharacterSceneName} from "../Login/SelectCharacterScene";
 import {TextureError} from "../../Exception/TextureError";
 import {addLoader} from "../Components/Loader";
+import {blackListManager} from "../../WebRtc/BlackListManager";
 
 export interface GameSceneInitInterface {
     initPosition: PointInterface|null,
@@ -1063,6 +1064,9 @@ export class GameScene extends ResizableScene implements CenterListener {
         );
         this.MapPlayers.add(player);
         this.MapPlayersByKey.set(player.userId, player);
+        player.on(selectedEvent, () => {
+            blackListManager.blackList(player.userId);
+        })
         player.updatePosition(addPlayerData.position);
     }
 

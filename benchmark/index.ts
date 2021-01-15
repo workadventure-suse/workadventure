@@ -31,8 +31,6 @@ async function startOneUser(): Promise<void> {
         userMovedCount++;
     })
 
-    console.log(connection.getUserId());
-
     let angle = Math.random() * Math.PI * 2;
 
     for (let i = 0; i < 100; i++) {

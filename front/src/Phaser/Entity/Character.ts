@@ -16,7 +16,7 @@ interface AnimationData {
 
 export abstract class Character extends Container {
     private bubble: SpeechBubble|null = null;
-    private readonly playerName: BitmapText;
+    protected readonly playerName: BitmapText;
     public PlayerValue: string;
     public sprites: Map<string, Sprite>;
     private lastDirection: string = PlayerAnimationNames.WalkDown;
