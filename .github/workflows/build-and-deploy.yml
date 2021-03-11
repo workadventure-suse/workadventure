@@ -1,164 +1,148 @@
 name: Build, push and deploy Docker image
 
 on:
-  - push
+  push:
+    # don't run if pushing tags
+    branches-ignore:
+    - refs/tags/*
 
 # Enables BuildKit
 env:
-  DOCKER_BUILDKIT: 1
+  DOCKER_IMAGE_ORG: ghcr.io/workadventure-suse
+  DOCKER_IMAGE_REPOSITORY: workadventure
 
 jobs:
-
   build-front:
-
     runs-on: ubuntu-latest
-
     steps:
-
       - name: Checkout
         uses: actions/checkout@v2
 
-
       # Create a slugified value of the branch
       - uses: rlespinasse/github-slug-action@3.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.CR_PAT }}
 
       - name: "Build and push front image"
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v2
         with:
-          dockerfile: front/Dockerfile
-          path: ./
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: thecodingmachine/workadventure-front
-          tags: ${{ env.GITHUB_REF_SLUG }}
-          add_git_labels: true
-
-  build-back:
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # Create a slugified value of the branch
-      - uses: rlespinasse/github-slug-action@3.1.0
+          context: .
+          file: front/Dockerfile
+          push: true
+          tags: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-front:${{ env.GITHUB_REF_SLUG }}"
+          labels: "org.opencontainers.image.source=https://github.com/workadventure-suse/workadventure/front"
 
       - name: "Build and push back image"
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v2
         with:
-          dockerfile: back/Dockerfile
-          path: ./
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: thecodingmachine/workadventure-back
-          tags: ${{ env.GITHUB_REF_SLUG }}
-          add_git_labels: true
+          context: .
+          file: back/Dockerfile
+          push: true
+          tags: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-back:${{ env.GITHUB_REF_SLUG }}"
+          labels: "org.opencontainers.image.source=https://github.com/workadventure-suse/workadventure/back"
 
-  build-pusher:
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # Create a slugified value of the branch
-      - uses: rlespinasse/github-slug-action@3.1.0
-
-      - name: "Build and push back image"
-        uses: docker/build-push-action@v1
+      - name: "Build and push pusher image"
+        uses: docker/build-push-action@v2
         with:
-          dockerfile: pusher/Dockerfile
-          path: ./
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: thecodingmachine/workadventure-pusher
-          tags: ${{ env.GITHUB_REF_SLUG }}
-          add_git_labels: true
+          context: .
+          file: pusher/Dockerfile
+          push: true
+          tags: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-pusher:${{ env.GITHUB_REF_SLUG }}"
+          labels: "org.opencontainers.image.source=https://github.com/workadventure-suse/workadventure/pusher"
 
-  build-uploader:
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # Create a slugified value of the branch
-      - uses: rlespinasse/github-slug-action@3.1.0
-
-      - name: "Build and push back image"
-        uses: docker/build-push-action@v1
+      - name: "Build and push uploader image"
+        uses: docker/build-push-action@v2
         with:
-          dockerfile: uploader/Dockerfile
-          path: ./
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: thecodingmachine/workadventure-uploader
-          tags: ${{ env.GITHUB_REF_SLUG }}
-          add_git_labels: true
+          context: .
+          file: uploader/Dockerfile
+          push: true
+          tags: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-uploader:${{ env.GITHUB_REF_SLUG }}"
+          labels: "org.opencontainers.image.source=https://github.com/workadventure-suse/workadventure/uploader"
+  # build-back:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-  build-maps:
+  #     # Create a slugified value of the branch
+  #     - uses: rlespinasse/github-slug-action@3.1.0
 
-    runs-on: ubuntu-latest
+  #     - name: "Build and push back image"
+  #       uses: docker/build-push-action@v1
+  #       with:
+  #         dockerfile: back/Dockerfile
+  #         path: ./
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.CR_PAT }}
+  #         repository: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-back"
+  #         tags: ${{ env.GITHUB_REF_SLUG }}
+  #         add_git_labels: true
 
-    steps:
+  # build-pusher:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Checkout
-        uses: actions/checkout@v2
+  #     # Create a slugified value of the branch
+  #     - uses: rlespinasse/github-slug-action@3.1.0
+
+  #     - name: "Build and push back image"
+  #       uses: docker/build-push-action@v1
+  #       with:
+  #         dockerfile: pusher/Dockerfile
+  #         path: ./
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.CR_PAT }}
+  #         repository: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-pusher"
+  #         tags: ${{ env.GITHUB_REF_SLUG }}
+  #         add_git_labels: true
+
+  # build-uploader:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     # Create a slugified value of the branch
+  #     - uses: rlespinasse/github-slug-action@3.1.0
+
+  #     - name: "Build and push back image"
+  #       uses: docker/build-push-action@v1
+  #       with:
+  #         dockerfile: uploader/Dockerfile
+  #         path: ./
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.CR_PAT }}
+  #         repository: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-uploader"
+  #         tags: ${{ env.GITHUB_REF_SLUG }}
+  #         add_git_labels: true
+
+  # # build-maps:
+  # #   runs-on: ubuntu-latest
+  # #   steps:
+  # #     - name: Checkout
+  # #       uses: actions/checkout@v2
 
 
-      # Create a slugified value of the branch
-      - uses: rlespinasse/github-slug-action@3.1.0
+  # #     # Create a slugified value of the branch
+  # #     - uses: rlespinasse/github-slug-action@3.1.0
 
-      - name: "Build and push front image"
-        uses: docker/build-push-action@v1
-        with:
-          dockerfile: maps/Dockerfile
-          path: maps/
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: thecodingmachine/workadventure-maps
-          tags: ${{ env.GITHUB_REF_SLUG }}
-          add_git_labels: true
-
-  deeploy:
-    needs:
-      - build-front
-      - build-back
-      - build-pusher
-      - build-maps
-      - build-uploader
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # Create a slugified value of the branch
-      - uses: rlespinasse/github-slug-action@3.1.0
-
-      - name: Deploy
-        uses: thecodingmachine/deeployer-action@master
-        env:
-          KUBE_CONFIG_FILE: ${{ secrets.KUBE_CONFIG_FILE }}
-          ADMIN_API_TOKEN: ${{ secrets.ADMIN_API_TOKEN }}
-          JITSI_ISS: ${{ secrets.JITSI_ISS }}
-          JITSI_URL: ${{ secrets.JITSI_URL }}
-          SECRET_JITSI_KEY: ${{ secrets.SECRET_JITSI_KEY }}
-          TURN_STATIC_AUTH_SECRET: ${{ secrets.TURN_STATIC_AUTH_SECRET }}
-        with:
-          namespace: workadventure-${{ env.GITHUB_REF_SLUG }}
-
-      - name: Add a comment in PR
-        uses: unsplash/comment-on-pr@v1.2.0
-        if: ${{ env.GITHUB_REF_SLUG != 'master' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: Environment deployed at https://play.${{ env.GITHUB_REF_SLUG }}.workadventure.test.thecodingmachine.com
-          check_for_duplicate_msg: true
+  # #     - name: "Build and push front image"
+  # #       uses: docker/build-push-action@v1
+  # #       with:
+  # #         dockerfile: maps/Dockerfile
+  # #         path: maps/
+  # #         username: ${{ secrets.DOCKER_USERNAME }}
+  # #         password: ${{ secrets.DOCKER_PASSWORD }}
+  # #         repository: "${{env.DOCKER_IMAGE_ORG}}/${{env.DOCKER_IMAGE_REPOSITORY}}-maps"
+  # #         tags: ${{ env.GITHUB_REF_SLUG }}
+  # #         add_git_labels: true
