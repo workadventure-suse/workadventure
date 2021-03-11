@@ -1,6 +1,6 @@
 FROM thecodingmachine/workadventure-back-base:latest as builder
+COPY --chown=docker:docker messages /var/www/messages
 WORKDIR /var/www/messages
-COPY --chown=docker:docker messages .
 RUN yarn install && yarn proto
 
 # we are rebuilding on each deploy to cope with the API_URL environment URL
