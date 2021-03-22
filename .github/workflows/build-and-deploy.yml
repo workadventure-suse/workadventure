@@ -2,8 +2,8 @@ name: Build, push and deploy Docker image
 
 on:
   push:
-    # don't run if pushing tags
-    branches-ignore:
+    # only run if pushing tags
+    branches:
     - refs/tags/*
 
 # Enables BuildKit
