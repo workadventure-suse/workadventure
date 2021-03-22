@@ -19,7 +19,9 @@ class LocalUserStore {
         window.localStorage.setItem('playerName', name);
     }
     getName(): string {
-        return window.localStorage.getItem('playerName') ?? '';
+        let name = window.localStorage.getItem('playerName') ?? '';
+        name = name.substring(0,12);
+        return name;
     }
 
     setPlayerCharacterIndex(playerCharacterIndex: number): void {
