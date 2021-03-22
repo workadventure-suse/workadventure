@@ -2,9 +2,8 @@ name: Build, push and deploy Docker image
 
 on:
   push:
-    # only run if pushing tags
-    branches:
-    - refs/tags/*
+    tags:
+    - v*
 
 # Enables BuildKit
 env:
@@ -12,7 +11,9 @@ env:
   DOCKER_IMAGE_REPOSITORY: workadventure
 
 jobs:
-  build-front:
+  images:
+    if: github.repository == 'workadventure-suse/workadventure'
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
